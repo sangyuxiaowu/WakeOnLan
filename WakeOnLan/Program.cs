@@ -1,10 +1,11 @@
-#if DEBUG
-using Microsoft.OpenApi.Models;
 using Sang.AspNetCore.SignAuthorization;
 using System.Net.Sockets;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Net.Mail;
+
+
+#if DEBUG
+using Microsoft.OpenApi.Models;
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
