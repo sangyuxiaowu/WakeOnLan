@@ -12,12 +12,6 @@ namespace WakeOnLan
             SendMagicPacket(magicPacket);
         }
 
-        internal static bool IsValidMacAddress(string macAddress)
-        {
-            Regex regex = new Regex("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$");
-            return regex.IsMatch(macAddress);
-        }
-
         static byte[] CreateMagicPacket(string macAddress)
         {
             byte[] macBytes = ParseMacAddress(macAddress);
@@ -38,12 +32,18 @@ namespace WakeOnLan
 
         static byte[] ParseMacAddress(string macAddress)
         {
-            string[] hexValues = macAddress.Split(new[] { ':', '-' });
+            string cleanedMacAddress = macAddress.Replace(":", "").Replace("-", "");
+
+            if (cleanedMacAddress.Length != 12)
+            {
+                throw new ArgumentException("Invalid MAC address format");
+            }
+
             byte[] macBytes = new byte[6];
 
-            for (int i = 0; i < hexValues.Length; i++)
+            for (int i = 0; i < 6; i++)
             {
-                macBytes[i] = Convert.ToByte(hexValues[i], 16);
+                macBytes[i] = Convert.ToByte(cleanedMacAddress.Substring(i * 2, 2), 16);
             }
 
             return macBytes;

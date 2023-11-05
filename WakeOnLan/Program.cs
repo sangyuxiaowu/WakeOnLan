@@ -45,7 +45,7 @@ app.UseSwaggerUI();
 
 app.MapGet("/wol", (string mac) =>
 {
-    if (!WOL.IsValidMacAddress(mac))
+    if (!Helper.IsValidMacAddress(mac))
     {
         return new CallBack(false, 400, "MAC地址格式错误");
     }
@@ -53,7 +53,6 @@ app.MapGet("/wol", (string mac) =>
     return new CallBack(true, 200, "发送成功");
 })
 #if DEBUG
-.WithName("WOL")
 .WithOpenApi(operation => new(operation)
 {
     Summary = "执行网络唤醒",
@@ -63,5 +62,29 @@ app.MapGet("/wol", (string mac) =>
 .WithMetadata(new SignAuthorizeAttribute())
 #endif
 ;
+
+
+app.MapGet("/devices", () =>
+{
+    // 从配置文件读取设备列表
+    var devices = app.Configuration.GetSection("Devices").Get<List<Device>>();
+    // 判断IP是否在线
+    Parallel.ForEach(devices, (device) =>
+    {
+        device.Online = Helper.Ping(device.IP);
+    });
+    return devices;
+})
+#if DEBUG
+.WithOpenApi(operation => new(operation)
+{
+    Summary = "获取设备配置列表",
+    Description = "获取配置的设备信息"
+})
+#else
+.WithMetadata(new SignAuthorizeAttribute())
+#endif
+;
+
 
 app.Run();
