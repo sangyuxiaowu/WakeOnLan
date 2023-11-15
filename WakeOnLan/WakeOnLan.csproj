@@ -14,7 +14,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Sang.AspNetCore.SignAuthorization" Version="1.0.4" />
+	  <PackageReference Include="Sang.AspNetCore.SignAuthorization" Version="1.0.5" />
 	</ItemGroup>
 
 </Project>

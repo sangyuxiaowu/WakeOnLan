@@ -1,21 +1,30 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER app
 WORKDIR /app
-EXPOSE 80
+EXPOSE 8080
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# Install clang/zlib1g-dev dependencies for publishing to native
+RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list.d/debian.sources
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    clang zlib1g-dev
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["WakeOnLan/WakeOnLan.csproj", "WakeOnLan/"]
 RUN dotnet restore "WakeOnLan/WakeOnLan.csproj"
 COPY . .
 WORKDIR "/src/WakeOnLan"
-RUN dotnet build "WakeOnLan.csproj" -c Release -o /app/build
+RUN dotnet build "WakeOnLan.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "WakeOnLan.csproj" -c Release -o /app/publish /p:UseAppHost=false
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "WakeOnLan.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=true
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS final
 WORKDIR /app
+EXPOSE 8080
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "WakeOnLan.dll"]
+ENTRYPOINT ["./WakeOnLan"]
