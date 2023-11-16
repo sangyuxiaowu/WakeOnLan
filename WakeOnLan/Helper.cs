@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace WakeOnLan
 {
-    public class Helper
+    internal class Helper
     {
         internal static bool IsValidMacAddress(string macAddress)
         {

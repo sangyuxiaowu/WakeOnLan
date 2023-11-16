@@ -1,16 +1,9 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
 EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-# Install clang/zlib1g-dev dependencies for publishing to native
-RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list.d/debian.sources
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    clang zlib1g-dev
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["WakeOnLan/WakeOnLan.csproj", "WakeOnLan/"]
