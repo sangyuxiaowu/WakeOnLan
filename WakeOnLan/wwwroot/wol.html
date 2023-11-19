@@ -1,0 +1,219 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WakeOnLan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 2rem;
+            color: #333;
+        }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            width: 60%;
+            margin: 2rem auto;
+        }
+
+        li {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        .device-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            display: inline-block;
+            animation: blink 1s infinite;
+        }
+
+            .status.online {
+                background-color: green;
+                animation: none;
+            }
+
+            .status.offline {
+                background-color: red;
+            }
+
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .tip {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            padding: 0.5rem;
+            font-size: 1rem;
+            display: none;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+        }
+
+            .tip.warning {
+                background-color: rgba(255, 193, 7, 0.8);
+            }
+
+            .tip.error {
+                background-color: rgba(220, 53, 69, 0.8);
+            }
+
+            .tip.success {
+                background-color: rgba(40, 167, 69, 0.8);
+            }
+    </style>
+</head>
+<body>
+    <h1>WakeOnLan</h1>
+    <div id="tip" class="tip"></div>
+    <ul id="deviceList"></ul>
+    <script>
+
+        const host = '';
+
+        function createDeviceItem(device) {
+            const li = document.createElement('li');
+            const status = device.online ? 'online' : 'offline';
+            li.innerHTML = `
+                <div class="device-info">
+                    <div>
+                        <span class="status ${status}"></span>
+                        <span>${device.name}</span>
+                    </div>
+                    <div>
+                        <span>IP: ${device.ip}</span> | <span>MAC: ${device.mac}</span>
+                    </div>
+                </div>
+                <button onclick="wakeOnLan('${device.mac}')">启动</button>
+            `;
+            return li;
+        }
+
+        function updateDeviceList(deviceList) {
+            const ul = document.getElementById('deviceList');
+            ul.innerHTML = '';
+            deviceList.forEach(device => {
+                ul.appendChild(createDeviceItem(device));
+            });
+        }
+
+        function showTip(message, type = 'success') {
+            const tip = document.getElementById('tip');
+            tip.textContent = message;
+            tip.classList.remove('warning', 'error', 'success');
+            tip.classList.add(type);
+
+            tip.style.display = 'block';
+            setTimeout(() => {
+                tip.style.display = 'none';
+            }, 3000);
+        }
+
+        async function wakeOnLan(mac) {
+            const signedUrl = await getSignedUrl(host + '/wol', { mac });
+            fetch(signedUrl, { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showTip('唤醒成功');
+                    } else {
+                        showTip(`唤醒失败: ${data.msg}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showTip('唤醒失败', 'error');
+                });
+        }
+
+        async function fetchDeviceList() {
+            try {
+                const signedUrl = await getSignedUrl(host + '/devices');
+                const response = await fetch(signedUrl, { method: 'GET' });
+                const data = await response.json();
+                if (data.success) {
+                    updateDeviceList(data.data);
+                } else if (data.status === 10000) {
+                    localStorage.removeItem('token');
+                    alert('Token不正确，请重新输入');
+                    fetchDeviceList();
+                } else {
+                    console.error('Error:', data.msg);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function getSignedUrl(path, queryParams = {}) {
+            const token = localStorage.getItem('token') || prompt('请输入Token:');
+            localStorage.setItem('token', token);
+            const timestamp = Math.floor(Date.now() / 1000);
+            const nonce = Math.random().toString(36).substring(2);
+            const sortedParams = [token, timestamp.toString(), nonce].sort();
+            const raw = sortedParams.join('');
+            const signature = new TextEncoder().encode(raw);
+            const digestBuffer = await crypto.subtle.digest('SHA-1', signature);
+            const digestArray = Array.from(new Uint8Array(digestBuffer));
+            const digestHex = digestArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            const url = new URL(path, window.location.origin);
+            url.searchParams.set('timestamp', timestamp);
+            url.searchParams.set('nonce', nonce);
+            url.searchParams.set('signature', digestHex);
+            Object.entries(queryParams).forEach(([key, value]) => {
+                url.searchParams.set(key, value);
+            });
+            return url;
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchDeviceList);
+    </script>
+</body>
+</html>

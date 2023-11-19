@@ -11,6 +11,16 @@ namespace WakeOnLan
     /// <param name="msg">消息</param>
     internal record CallBack(bool success, int status, string msg);
 
+
+    /// <summary>
+    /// 返回结果
+    /// </summary>
+    /// <param name="success">执行结果</param>
+    /// <param name="status">状态码</param>
+    /// <param name="msg">消息</param>
+    /// <param name="data">数据</param>
+    internal record CallBack<T>(bool success, int status, string msg, T data);
+
     /// <summary>
     /// 设备信息
     /// </summary>

@@ -28,6 +28,16 @@ builder.Services.AddSwaggerGen(c => {
     var filePath = Path.Combine(System.AppContext.BaseDirectory, "WakeOnLan.xml");
     c.IncludeXmlComments(filePath);
 });
+
+var WOLAllowSpecificOrigins = "_wolAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: WOLAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins("*");
+                      });
+});
 #endif
 
 var app = builder.Build();
@@ -40,8 +50,10 @@ app.UseSignAuthorization(opt => {
 #if DEBUG
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseCors(WOLAllowSpecificOrigins);
 #endif
 
+app.UseStaticFiles();
 
 app.MapGet("/wol", (string mac) =>
 {
@@ -73,7 +85,7 @@ app.MapGet("/devices", () =>
     {
         device.Online = Helper.Ping(device.IP);
     });
-    return devices;
+    return new CallBack<List<Device>>(true, 200, "获取成功", devices);
 })
 #if DEBUG
 .WithOpenApi(operation => new(operation)
