@@ -1,4 +1,4 @@
-using Sang.AspNetCore.SignAuthorization;
+ï»¿using Sang.AspNetCore.SignAuthorization;
 using WakeOnLan;
 
 
@@ -15,7 +15,7 @@ builder.Services.AddSwaggerGen(c => {
        new OpenApiInfo
        {
            Title = "WakeOnLan",
-           Description = "ÓÃÓÚÄÚÍøÍøÂçÉè±¸·¢ÏÖºÍ»½ĞÑ",
+           Description = "ç”¨äºå†…ç½‘ç½‘ç»œè®¾å¤‡å‘ç°å’Œå”¤é†’",
            Contact = new OpenApiContact
            {
                Email = "sang93@qq.com",
@@ -24,7 +24,7 @@ builder.Services.AddSwaggerGen(c => {
            Version = "v1"
        }
     );
-    //ÉèÖÃxmlÒıÓÃ
+    //è®¾ç½®xmlå¼•ç”¨
     var filePath = Path.Combine(System.AppContext.BaseDirectory, "WakeOnLan.xml");
     c.IncludeXmlComments(filePath);
 });
@@ -43,7 +43,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseSignAuthorization(opt => {
-    // ´ÓÅäÖÃÎÄ¼ş¶ÁÈ¡ Token
+    // ä»é…ç½®æ–‡ä»¶è¯»å– Token
     opt.sToken = app.Configuration["Token"];
 });
 
@@ -59,16 +59,16 @@ app.MapGet("/wol", (string mac) =>
 {
     if (!Helper.IsValidMacAddress(mac))
     {
-        return new CallBack(false, 400, "MACµØÖ·¸ñÊ½´íÎó");
+        return new CallBack(false, 400, "MACåœ°å€æ ¼å¼é”™è¯¯");
     }
     WOL.Send(mac);
-    return new CallBack(true, 200, "·¢ËÍ³É¹¦");
+    return new CallBack(true, 200, "å‘é€æˆåŠŸ");
 })
 #if DEBUG
 .WithOpenApi(operation => new(operation)
 {
-    Summary = "Ö´ĞĞÍøÂç»½ĞÑ",
-    Description = "Í¨¹ı´«ÈëMACµØÖ·»½ĞÑ¾ÖÓòÍøÄÚµÄÉè±¸"
+    Summary = "æ‰§è¡Œç½‘ç»œå”¤é†’",
+    Description = "é€šè¿‡ä¼ å…¥MACåœ°å€å”¤é†’å±€åŸŸç½‘å†…çš„è®¾å¤‡"
 })
 #else
 .WithMetadata(new SignAuthorizeAttribute())
@@ -78,20 +78,20 @@ app.MapGet("/wol", (string mac) =>
 
 app.MapGet("/devices", () =>
 {
-    // ´ÓÅäÖÃÎÄ¼ş¶ÁÈ¡Éè±¸ÁĞ±í
+    // ä»é…ç½®æ–‡ä»¶è¯»å–è®¾å¤‡åˆ—è¡¨
     var devices = app.Configuration.GetSection("Devices").Get<List<Device>>();
-    // ÅĞ¶ÏIPÊÇ·ñÔÚÏß
+    // åˆ¤æ–­IPæ˜¯å¦åœ¨çº¿
     Parallel.ForEach(devices, (device) =>
     {
         device.Online = Helper.Ping(device.IP);
     });
-    return new CallBack<List<Device>>(true, 200, "»ñÈ¡³É¹¦", devices);
+    return new CallBack<List<Device>>(true, 200, "è·å–æˆåŠŸ", devices);
 })
 #if DEBUG
 .WithOpenApi(operation => new(operation)
 {
-    Summary = "»ñÈ¡Éè±¸ÅäÖÃÁĞ±í",
-    Description = "»ñÈ¡ÅäÖÃµÄÉè±¸ĞÅÏ¢"
+    Summary = "è·å–è®¾å¤‡é…ç½®åˆ—è¡¨",
+    Description = "è·å–é…ç½®çš„è®¾å¤‡ä¿¡æ¯"
 })
 #else
 .WithMetadata(new SignAuthorizeAttribute())
