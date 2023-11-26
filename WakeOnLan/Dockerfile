@@ -14,8 +14,8 @@ RUN dotnet publish "WakeOnLan.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list.d/debian.sources \
     && apt-get update \
-    && apt-get install -y --no-install-recommends \
-    iputils-ping \
+    && apt-get install -y --no-install-recommends iputils-ping \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && chmod u+s /bin/ping
 WORKDIR /app
