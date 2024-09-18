@@ -1,6 +1,5 @@
-﻿using System.Net.Sockets;
-using System.Net;
-using System.Text.RegularExpressions;
+﻿using System.Net;
+using System.Net.Sockets;
 
 namespace WakeOnLan
 {

@@ -10,7 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 #if DEBUG
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c => {
+builder.Services.AddSwaggerGen(c =>
+{
     c.SwaggerDoc("v1",
        new OpenApiInfo
        {
@@ -42,7 +43,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseSignAuthorization(opt => {
+app.UseSignAuthorization(opt =>
+{
     // 从配置文件读取 Token
     opt.sToken = app.Configuration["Token"];
 });

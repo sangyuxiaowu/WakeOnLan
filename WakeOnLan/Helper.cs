@@ -15,7 +15,7 @@ namespace WakeOnLan
         {
             // 检查IP是否在线
             Ping ping = new Ping();
-            PingReply pingReply = ping.Send(iP,100);
+            PingReply pingReply = ping.Send(iP, 100);
             return pingReply.Status == IPStatus.Success;
         }
     }

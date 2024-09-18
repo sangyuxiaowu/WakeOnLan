@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace WakeOnLan
+﻿namespace WakeOnLan
 {
 
     /// <summary>
@@ -27,11 +25,12 @@ namespace WakeOnLan
     /// <param name="Name">备注名</param>
     /// <param name="IP">IP地址</param>
     /// <param name="MAC">MAC地址</param>
-    internal record Device(string Name, string IP, string MAC) { 
+    internal record Device(string Name, string IP, string MAC)
+    {
         /// <summary>
         /// 设备是否在线
         /// </summary>
-        public bool Online { get; set; } = false;  
+        public bool Online { get; set; } = false;
     };
 
 
